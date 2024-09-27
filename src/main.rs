@@ -91,7 +91,6 @@ async fn get_order(Extension(order_state): Extension<Arc<RwLock<Order>>>) -> Htm
 async fn main() {
     env_logger::init();
 
-    // Обработка аргументов командной строки
     let matches = Command::new("Order Service")
         .arg(Arg::new("port")
             .short('p')
@@ -105,7 +104,6 @@ async fn main() {
             .help("Path to the order JSON file"))
         .get_matches();
 
-    // Чтение параметров
     let port: u16 = matches.get_one::<String>("port").unwrap().parse().unwrap_or_else(|_| {
         error!("Invalid port number, using default port 3000");
         3000
@@ -115,7 +113,6 @@ async fn main() {
     info!("Starting server on port: {}", port);
     info!("Loading order from file: {}", file_path);
 
-    // Загрузка данных из файла
     let order = match load_order_from_json(file_path).await {
         Ok(order) => order,
         Err(e) => {
@@ -128,7 +125,6 @@ async fn main() {
         .route("/order", get(get_order))
         .layer(Extension(Arc::new(RwLock::new(order))));
 
-    // Запуск сервера
     if let Err(e) = axum::Server::bind(&format!("0.0.0.0:{}", port).parse().unwrap())
         .serve(app.into_make_service())
         .await
